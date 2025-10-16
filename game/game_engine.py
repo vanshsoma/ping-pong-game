@@ -4,7 +4,6 @@ from .ball import Ball
 
 # Game Constants
 WHITE = (255, 255, 255)
-WINNING_SCORE = 5
 
 class GameEngine:
     def __init__(self, width, height):
@@ -13,19 +12,34 @@ class GameEngine:
         self.paddle_width = 10
         self.paddle_height = 100
 
+        # Load sound effects
+        try:
+            self.paddle_hit_sound = pygame.mixer.Sound("assets/paddle_hit.wav")
+            self.wall_bounce_sound = pygame.mixer.Sound("assets/wall_bounce.wav")
+            self.score_sound = pygame.mixer.Sound("assets/score.wav")
+        except pygame.error as e:
+            print(f"Error loading sound files: {e}")
+            print("Please ensure you have an 'assets' folder with the required .wav files.")
+            # Handle error gracefully, e.g., by creating dummy sound objects
+            self.paddle_hit_sound = pygame.mixer.Sound(buffer=b'')
+            self.wall_bounce_sound = pygame.mixer.Sound(buffer=b'')
+            self.score_sound = pygame.mixer.Sound(buffer=b'')
+
+
         self.player = Paddle(10, height // 2 - 50, self.paddle_width, self.paddle_height)
         self.ai = Paddle(width - 20, height // 2 - 50, self.paddle_width, self.paddle_height)
-        self.ball = Ball(width // 2, height // 2, 7, 7, width, height)
+        # Pass the sounds to the Ball object
+        self.ball = Ball(width // 2, height // 2, 7, 7, width, height, self.paddle_hit_sound, self.wall_bounce_sound)
 
         self.player_score = 0
         self.ai_score = 0
         self.font = pygame.font.SysFont("Arial", 30)
         
-        # Add a game over state
+        self.winning_score = 5
         self.game_over = False
 
     def handle_input(self):
-        # Don't handle input if the game is over
+        # Don't handle paddle movement if the game is over
         if self.game_over:
             return
             
@@ -45,19 +59,21 @@ class GameEngine:
 
         if self.ball.x <= 0:
             self.ai_score += 1
+            self.score_sound.play() # Play score sound
             self.ball.reset()
         elif self.ball.x >= self.width:
             self.player_score += 1
+            self.score_sound.play() # Play score sound
             self.ball.reset()
 
-        # Check for a winner
-        if self.player_score >= WINNING_SCORE or self.ai_score >= WINNING_SCORE:
+        # Check for a winner against the current winning score
+        if self.player_score >= self.winning_score or self.ai_score >= self.winning_score:
             self.game_over = True
 
         self.ai.auto_track(self.ball, self.height)
 
     def render(self, screen):
-        # Draw paddles and ball
+        # Draw game elements
         pygame.draw.rect(screen, WHITE, self.player.rect())
         pygame.draw.rect(screen, WHITE, self.ai.rect())
         pygame.draw.ellipse(screen, WHITE, self.ball.rect())
@@ -69,15 +85,39 @@ class GameEngine:
         screen.blit(player_text, (self.width//4, 20))
         screen.blit(ai_text, (self.width * 3//4, 20))
 
-        # If game is over, display the winner
+        # If game is over, display the replay menu
         if self.game_over:
-            self.draw_winner(screen)
-            
-    def draw_winner(self, screen):
-        """Draws the winner text on the screen."""
-        end_font = pygame.font.SysFont("Arial", 60)
-        winner_text = "Player Wins!" if self.player_score >= WINNING_SCORE else "AI Wins!"
-        
-        text_surface = end_font.render(winner_text, True, WHITE)
-        text_rect = text_surface.get_rect(center=(self.width / 2, self.height / 2))
+            self.draw_game_over_menu(screen)
+
+    def draw_game_over_menu(self, screen):
+        """Draws the winner and the replay options on the screen."""
+        # Display Winner
+        winner_font = pygame.font.SysFont("Arial", 50)
+        winner_text_str = "Player Wins!" if self.player_score >= self.winning_score else "AI Wins!"
+        text_surface = winner_font.render(winner_text_str, True, WHITE)
+        text_rect = text_surface.get_rect(center=(self.width / 2, self.height / 2 - 100))
         screen.blit(text_surface, text_rect)
+
+        # Display Replay Options
+        option_font = pygame.font.SysFont("Arial", 30)
+        options = [
+            "Press [3] for Best of 3",
+            "Press [5] for Best of 5",
+            "Press [7] for Best of 7",
+            "Press [ESC] to Exit"
+        ]
+        
+        for i, option in enumerate(options):
+            option_surface = option_font.render(option, True, WHITE)
+            option_rect = option_surface.get_rect(center=(self.width / 2, self.height / 2 + i * 40))
+            screen.blit(option_surface, option_rect)
+            
+    def reset_game(self, new_winning_score):
+        """Resets the game state for a new match."""
+        self.winning_score = new_winning_score
+        self.player_score = 0
+        self.ai_score = 0
+        self.game_over = False
+        self.ball.reset()
+
+

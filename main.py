@@ -3,13 +3,13 @@ from game.game_engine import GameEngine
 
 # Initialize pygame/Start application
 pygame.init()
+pygame.mixer.init() # Initialize the sound mixer
 
 # Screen dimensions
 WIDTH, HEIGHT = 800, 600
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Ping Pong - Pygame Version")
-
-# Colors
+# ... (rest of the file is unchanged) ...
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
@@ -27,16 +27,21 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
+            # Check for replay input only when the game is over
+            if event.type == pygame.KEYDOWN and engine.game_over:
+                if event.key == pygame.K_3:
+                    engine.reset_game(3)
+                elif event.key == pygame.K_5:
+                    engine.reset_game(5)
+                elif event.key == pygame.K_7:
+                    engine.reset_game(7)
+                elif event.key == pygame.K_ESCAPE:
+                    running = False
 
         engine.handle_input()
         engine.update()
         engine.render(SCREEN)
-
-        # Check if the game has ended
-        if engine.game_over:
-            pygame.display.flip() # Update the screen one last time to show the message
-            pygame.time.delay(3000) # Wait for 3 seconds (3000 milliseconds)
-            running = False # End the game loop
         
         pygame.display.flip()
         clock.tick(FPS)
@@ -45,3 +50,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

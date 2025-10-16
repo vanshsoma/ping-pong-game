@@ -125,13 +125,13 @@ pygame-pingpong/
 
 ## Submission Checklist
 
-- [] All 4 tasks completed
-- [] Game behaves as expected
-- [] No bugs or crashes
-- [] Code reviewed with LLM
-- [] Final score and winner display works correctly
-- [] Score appears correctly on both player and AI sides
-- [] Dependencies listed in `requirements.txt`
-- [] README is followed during setup and testing
-- [] Codebase is clean, modular, and understandable
-- [] Submission should include the Chat/LLM used Page link with the complete chat history.
+- [✓] All 4 tasks completed
+- [✓] Game behaves as expected
+- [✓] No bugs or crashes
+- [✓] Code reviewed with LLM
+- [✓] Final score and winner display works correctly
+- [✓] Score appears correctly on both player and AI sides
+- [✓] Dependencies listed in `requirements.txt`
+- [✓] README is followed during setup and testing
+- [✓] Codebase is clean, modular, and understandable
+- [✓] Submission should include the Chat/LLM used Page link with the complete chat history.
